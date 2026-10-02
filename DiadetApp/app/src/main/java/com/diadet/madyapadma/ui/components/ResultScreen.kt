@@ -132,7 +132,7 @@ private fun ResultContent(
     val isDiabetic   = prediction.isDiabetic
     val diagColor    = if (isDiabetic) Color(0xFFE53935) else Color(0xFF43A047)
     val diagText     = if (isDiabetic) stringResource(R.string.diabetic) else stringResource(R.string.non_diabetic)
-    val isLowConf    = prediction.confidence < 0.55f
+    val isLowConf    = prediction.decisionConfidence < 0.55f
 
     Column(
         modifier = Modifier
@@ -215,7 +215,7 @@ private fun ResultContent(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${(prediction.diagnosisPercent * 100).format1dp()}%",
+                    text = "${(prediction.decisionConfidence * 100).format1dp()}%",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = diagColor
@@ -253,7 +253,8 @@ private fun ResultContent(
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Confidence tepat di bawah kelas diagnostik
+        // Confidence keputusan diagnosis (dari selisih bukti kelas,
+        // bukan sekadar skor mentah kelas pemenang)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = stringResource(R.string.confidence),
@@ -262,7 +263,7 @@ private fun ResultContent(
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = "${(prediction.confidence * 100).format1dp()}%",
+                text = "${(prediction.decisionConfidence * 100).format1dp()}%",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = if (isLowConf) Color(0xFFE65100) else diagColor
@@ -270,8 +271,14 @@ private fun ResultContent(
         }
         Spacer(modifier = Modifier.height(8.dp))
         ConfidenceBar(
-            confidence = prediction.confidence,
+            confidence = prediction.decisionConfidence,
             color = if (isLowConf) Color(0xFFE65100) else diagColor
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.confidence_explainer),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(8.dp))

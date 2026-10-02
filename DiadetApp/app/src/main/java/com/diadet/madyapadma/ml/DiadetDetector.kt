@@ -246,7 +246,11 @@ class DiadetDetector(private val context: Context) {
                     val y1 = ((data[base + 1] - padTop)  / scale).coerceIn(0f, origH.toFloat())
                     val x2 = ((data[base + 2] - padLeft) / scale).coerceIn(0f, origW.toFloat())
                     val y2 = ((data[base + 3] - padTop)  / scale).coerceIn(0f, origH.toFloat())
-                    results.add(DetectionBox(RectF(x1, y1, x2, y2), conf, cls))
+                    // Format NMS-ed tidak menyimpan skor per-kelas:
+                    // anggap seluruh conf milik kelas pemenang.
+                    val s0n = if (cls == 0) conf else 0f
+                    val s1n = if (cls == 1) conf else 0f
+                    results.add(DetectionBox(RectF(x1, y1, x2, y2), conf, cls, s0n, s1n))
                 }
             }
             // Format raw YOLO: [1, 4+numCls, 8400]
@@ -267,6 +271,11 @@ class DiadetDetector(private val context: Context) {
                     }
                     if (bestConf < CONF_THRESHOLD) continue
 
+                    // Simpan skor kedua kelas untuk decision-confidence
+                    // (indeks 4 = Diabetes, indeks 5 = Nondiabetes).
+                    val s0 = if (numFeatures > 4) data[a + 4 * numAnchors] else 0f
+                    val s1 = if (numFeatures > 5) data[a + 5 * numAnchors] else 0f
+
                     // cx,cy,w,h in model input space
                     val cx = data[a + 0 * numAnchors]
                     val cy = data[a + 1 * numAnchors]
@@ -278,7 +287,7 @@ class DiadetDetector(private val context: Context) {
                     val x2 = ((cx + w / 2 - padLeft) / scale).coerceIn(0f, origW.toFloat())
                     val y2 = ((cy + h / 2 - padTop)  / scale).coerceIn(0f, origH.toFloat())
 
-                    rawBoxes.add(DetectionBox(RectF(x1, y1, x2, y2), bestConf, bestCls))
+                    rawBoxes.add(DetectionBox(RectF(x1, y1, x2, y2), bestConf, bestCls, s0, s1))
                 }
                 results.addAll(nms(rawBoxes, IOU_THRESHOLD))
                 Log.d(TAG, "rawAnchors=$numAnchors maxScore=$maxScore kept=${results.size}")
@@ -371,5 +380,9 @@ data class LetterboxResult(
 data class DetectionBox(
     val box: RectF,
     val confidence: Float,
-    val classId: Int
+    val classId: Int,
+    /** Skor mentah model untuk kelas Diabetes (0..1). */
+    val scoreDiabetes: Float = 0f,
+    /** Skor mentah model untuk kelas Nondiabetes (0..1). */
+    val scoreNondiabetes: Float = 0f
 )

@@ -32,6 +32,7 @@
     <string name="auto_status_low_quality">Gambar terlalu buram, tahan kamera</string>
     <string name="auto_status_ready">Siap</string>
     <string name="low_confidence_warning">Keyakinan rendah — mohon ambil ulang</string>
+    <string name="confidence_explainer">Keyakinan keputusan dari selisih kedua kelas dan deteksi lain yang bertentangan — bukan sekadar skor tertinggi.</string>
     <string name="capture_instruction">Arahkan kamera ke lidah, pastikan terlihat jelas</string>
     <string name="medical_disclaimer">⚕️ Aplikasi ini bukan alat diagnosis medis. Hasil hanya untuk tujuan skrining. Konsultasikan dengan tenaga kesehatan untuk diagnosis medis.</string>
     <string name="disclaimer_title">Peringatan Medis</string>

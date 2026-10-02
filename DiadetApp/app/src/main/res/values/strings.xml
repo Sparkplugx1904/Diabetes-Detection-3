@@ -32,6 +32,7 @@
     <string name="auto_status_low_quality">Image too blurry, hold camera steady</string>
     <string name="auto_status_ready">Ready</string>
     <string name="low_confidence_warning">Low confidence — please retake</string>
+    <string name="confidence_explainer">Decision confidence from the margin between classes and any conflicting detections — not just the top score.</string>
     <string name="capture_instruction">Point camera at tongue, keep it in frame</string>
 
     <!-- Medical Disclaimer -->

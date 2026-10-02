@@ -83,6 +83,22 @@ class DiadetPipeline(private val context: Context) {
             val diabeticProb = if (isDiabetic) conf else (1f - conf)
             val normalProb   = if (!isDiabetic) conf else (1f - conf)
 
+            // 6. Decision-confidence: keyakinan KEPUTUSAN diagnosis,
+            // BUKAN skor mentah model. Dihitung dari selisih bukti:
+            //   sWin / (sWin + buktiLawanTerkuat)
+            // Bukti lawan = skor kelas lawan pada box terbaik, plus skor
+            // kelas lawan tertinggi dari box lain yang konflik kelas.
+            // Contoh: dua area lidah bertentangan (0.94 vs 0.92) → ~50%
+            // + peringatan keyakinan rendah, bukan kepastian semu 94%.
+            // (Heuristik keputusan — bukan probabilitas terkalibrasi.)
+            val sWin = if (isDiabetic) best.scoreDiabetes else best.scoreNondiabetes
+            val oppOwn = if (isDiabetic) best.scoreNondiabetes else best.scoreDiabetes
+            val oppOther = detections.drop(1)
+                .filter { it.classId != best.classId }
+                .maxOfOrNull { if (isDiabetic) it.scoreNondiabetes else it.scoreDiabetes } ?: 0f
+            val opp = maxOf(oppOwn, oppOther)
+            val decisionConfidence = (sWin / (sWin + opp)).coerceIn(0f, 1f)
+
             return@withContext PredictionResult(
                 isDiabetic = isDiabetic,
                 diabeticProbability = diabeticProb,
@@ -90,7 +106,8 @@ class DiadetPipeline(private val context: Context) {
                 inferenceTimeMs = elapsed(startTime),
                 detectionBox = best.box,
                 annotatedBitmap = annotated,
-                classLabel = label
+                classLabel = label,
+                decisionConfidence = decisionConfidence
             )
 
         } catch (e: Exception) {
