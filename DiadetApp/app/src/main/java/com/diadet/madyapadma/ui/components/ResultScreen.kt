@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -244,63 +243,36 @@ private fun ResultContent(
         )
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Hanya kelas pemenang yang ditampilkan — nilai minoritas
+        // (100% − confidence) sengaja tidak ditampilkan.
         ClassProbabilityRow(
-            label = stringResource(R.string.diabetic_class),
-            value = prediction.diabeticProbability,
-            isWinner = isDiabetic,
-            color = Color(0xFFE53935)
+            label = diagText,
+            value = prediction.confidence,
+            isWinner = true,
+            color = diagColor
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        ClassProbabilityRow(
-            label = stringResource(R.string.non_diabetic_class),
-            value = prediction.nonDiabeticProbability,
-            isWinner = !isDiabetic,
-            color = Color(0xFF43A047)
-        )
+        Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Confidence summary
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.confidence),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "${(prediction.confidence * 100).format1dp()}%",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isLowConf) Color(0xFFE65100) else diagColor
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                ConfidenceBar(
-                    confidence = prediction.confidence,
-                    color = if (isLowConf) Color(0xFFE65100) else diagColor
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.margin),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "${(prediction.margin * 100).format1dp()}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+        // Confidence tepat di bawah kelas diagnostik
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.confidence),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = "${(prediction.confidence * 100).format1dp()}%",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = if (isLowConf) Color(0xFFE65100) else diagColor
+            )
         }
+        Spacer(modifier = Modifier.height(8.dp))
+        ConfidenceBar(
+            confidence = prediction.confidence,
+            color = if (isLowConf) Color(0xFFE65100) else diagColor
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
         Text(
