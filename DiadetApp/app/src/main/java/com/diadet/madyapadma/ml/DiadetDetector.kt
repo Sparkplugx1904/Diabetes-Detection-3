@@ -38,15 +38,17 @@ class DiadetDetector(private val context: Context) {
         private const val CONF_THRESHOLD = 0.25f
         private const val IOU_THRESHOLD = 0.45f
 
-        // Class labels dari model YOLO diabetes
+        // Class labels dari model YOLO diabetes (sinkron dengan m.names best.pt)
         val CLASS_LABELS = arrayOf(
             "Diabetes",    // 0 — Terindikasi diabetes
-            "Normal"       // 1 — Normal
+            "Nondiabetes"  // 1 — Normal / non-diabetes
         )
 
         // Letterbox fill YOLO standard (114/255)
+        // NOTE: TensorImageUtils.bitmapToFloat32Tensor menghitung (pixel/255 - mean)/std,
+        // jadi untuk normalisasi /255 pakai MEAN=0, STD=1. (STD=1/255 SALAH → input 0-255 → skor ~0)
         private val MEAN = floatArrayOf(0f, 0f, 0f)
-        private val STD  = floatArrayOf(1f / 255f, 1f / 255f, 1f / 255f)
+        private val STD  = floatArrayOf(1f, 1f, 1f)
     }
 
     @Volatile private var module: Module? = null
@@ -178,12 +180,14 @@ class DiadetDetector(private val context: Context) {
                 val numFeatures = shape[1].toInt()
                 val numCls = numFeatures - 4
                 val rawBoxes = mutableListOf<DetectionBox>()
+                var maxScore = 0f
 
                 for (a in 0 until numAnchors) {
                     var bestConf = 0f
                     var bestCls = 0
                     for (c in 0 until numCls) {
                         val score = data[a + (4 + c) * numAnchors]
+                        if (score > maxScore) maxScore = score
                         if (score > bestConf) { bestConf = score; bestCls = c }
                     }
                     if (bestConf < CONF_THRESHOLD) continue
@@ -202,6 +206,7 @@ class DiadetDetector(private val context: Context) {
                     rawBoxes.add(DetectionBox(RectF(x1, y1, x2, y2), bestConf, bestCls))
                 }
                 results.addAll(nms(rawBoxes, IOU_THRESHOLD))
+                Log.d(TAG, "rawAnchors=$numAnchors maxScore=$maxScore kept=${results.size}")
             }
             else -> Log.w(TAG, "Unknown output shape: ${shape.toList()}")
         }
