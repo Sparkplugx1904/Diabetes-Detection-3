@@ -235,6 +235,7 @@ fun CaptureScreen(
                                 val detections = detector.detect(bitmap)
                                 val tongueFound = detections.isNotEmpty()
                                 val bestConf = detections.firstOrNull()?.confidence ?: 0f
+                                val bestClass = detections.firstOrNull()?.classId
                                 val confThreshold = viewModel.settings.confidenceThreshold.value
 
                                 mainExecutor.execute {
@@ -248,8 +249,10 @@ fun CaptureScreen(
                                                 viewModel.reportAutoCaptureStatus("searching", 0)
                                             }
                                             else -> {
+                                                // Stabil hanya jika KELAS SAMA konsisten antar-frame
+                                                // (menolak halusinasi yang kelasnya flicker Diabetes↔Nondiabetes)
                                                 val stable = stabilityState.update(
-                                                    detected = true,
+                                                    classId = bestClass,
                                                     stabilityNeeded = viewModel.settings.stabilityFrames.value
                                                 )
                                                 if (stable) {
@@ -460,14 +463,22 @@ private fun AutoCaptureBanner(status: String, progress: Int) {
 
 private class StabilityTracker {
     private val windowSize = 8
-    private val window = ArrayDeque<Boolean>(windowSize)
+    private val window = ArrayDeque<Int?>(windowSize)
     var count: Int = 0
         private set
 
-    fun update(detected: Boolean, stabilityNeeded: Int): Boolean {
+    /**
+     * True jika classId yang SAMA terdeteksi dalam >= stabilityNeeded frame terakhir.
+     * null = tidak ada deteksi valid → tidak stabil.
+     */
+    fun update(classId: Int?, stabilityNeeded: Int): Boolean {
         if (window.size == windowSize) window.removeFirst()
-        window.addLast(detected)
-        count = window.count { it }
+        window.addLast(classId)
+        if (classId == null) {
+            count = 0
+            return false
+        }
+        count = window.count { it == classId }
         return count >= stabilityNeeded
     }
 

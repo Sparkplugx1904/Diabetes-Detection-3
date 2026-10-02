@@ -38,6 +38,13 @@ class DiadetDetector(private val context: Context) {
         private const val CONF_THRESHOLD = 0.25f
         private const val IOU_THRESHOLD = 0.45f
 
+        // Anti false-positive gates (dikalibrasi via probe_color.py / probe_rgb.py):
+        // noise → area 99.8% | solid-gray/checker → area ~100%, tonguepx 0% |
+        // skin-blob → area 32%, tonguepx 0% | lidah asli → area 14-38%, tonguepx 58-94%.
+        private const val MIN_AREA_FRACTION = 0.05f
+        private const val MAX_AREA_FRACTION = 0.90f
+        private const val MIN_TONGUE_FRACTION = 0.35f
+
         // Class labels dari model YOLO diabetes (sinkron dengan m.names best.pt)
         val CLASS_LABELS = arrayOf(
             "Diabetes",    // 0 — Terindikasi diabetes
@@ -136,7 +143,75 @@ class DiadetDetector(private val context: Context) {
             }
         }
 
-        return parseDetections(predTensor, scale, padLeft, padTop, bitmap.width, bitmap.height)
+        return filterTongueDetections(
+            parseDetections(predTensor, scale, padLeft, padTop, bitmap.width, bitmap.height),
+            bitmap
+        )
+    }
+
+    /**
+     * Saring hasil mentah model agar tidak ada false-positive saat tidak ada lidah.
+     * Model YOLO teruji memberi conf tinggi bahkan pada noise (0.97) / gambar acak,
+     * sehingga confidence saja tidak cukup. Dua gate independen:
+     * 1. Fraksi luas box wajar (5-90% area gambar) — menolak halusinasi selebar frame.
+     * 2. Fraksi piksel warna lidah (kemerahan) di dalam box — menolak noise / objek non-lidah.
+     */
+    private fun filterTongueDetections(
+        boxes: List<DetectionBox>,
+        original: Bitmap
+    ): List<DetectionBox> {
+        if (boxes.isEmpty()) return boxes
+        val imgArea = (original.width * original.height).toFloat()
+        var areaRejected = 0
+        var colorRejected = 0
+        val kept = boxes.filter { det ->
+            val areaFrac = (det.box.width() * det.box.height()) / imgArea
+            if (areaFrac < MIN_AREA_FRACTION || areaFrac > MAX_AREA_FRACTION) {
+                areaRejected++
+                return@filter false
+            }
+            if (tongueColorFraction(original, det.box) < MIN_TONGUE_FRACTION) {
+                colorRejected++
+                return@filter false
+            }
+            true
+        }
+        if (kept.size != boxes.size) {
+            Log.d(TAG, "Tongue gates: kept ${kept.size}/${boxes.size} " +
+                    "(areaRejected=$areaRejected, colorRejected=$colorRejected)")
+        }
+        return kept.sortedByDescending { it.confidence }
+    }
+
+    /**
+     * Fraksi piksel kemerahan (R dominan, saturasi cukup) di dalam box.
+     * Ekuivalen RGB dari aturan HSV (H merah, S>=60, V>=60), tanpa perlu OpenCV.
+     */
+    private fun tongueColorFraction(bitmap: Bitmap, box: RectF): Float {
+        val x0 = box.left.toInt().coerceIn(0, bitmap.width - 1)
+        val y0 = box.top.toInt().coerceIn(0, bitmap.height - 1)
+        val x1 = box.right.toInt().coerceIn(0, bitmap.width)
+        val y1 = box.bottom.toInt().coerceIn(0, bitmap.height)
+        val w = x1 - x0
+        val h = y1 - y0
+        if (w <= 0 || h <= 0) return 0f
+        val pixels = IntArray(w * h)
+        bitmap.getPixels(pixels, 0, w, x0, y0, w, h)
+        var tongue = 0
+        var total = 0
+        var i = 0
+        while (i < pixels.size) {
+            val p = pixels[i]
+            val r = (p shr 16) and 0xFF
+            val g = (p shr 8) and 0xFF
+            val b = p and 0xFF
+            val mx = max(max(r, g), b)
+            val mn = min(min(r, g), b)
+            if (r >= g && r >= b && (mx - mn) >= 60) tongue++
+            total++
+            i += 3 // subsample: cukup untuk estimasi fraksi, hemat CPU di live analyzer
+        }
+        return if (total == 0) 0f else tongue.toFloat() / total
     }
 
 
