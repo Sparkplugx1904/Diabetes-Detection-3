@@ -1,0 +1,30 @@
+# Folder riset & web app (tidak di-push: besar, berisi model biner)
+Andidet.AI/
+
+# Model ML (biner besar / hasil generate — dibuat ulang via export_torchscript.py)
+*.pt
+*.torchscript
+*.onnx
+*.tflite
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Output build Android (lapis tambahan; DiadetApp/.gitignore sudah mencakup level app)
+DiadetApp/app/build/
+DiadetApp/.gradle/
+build/
+
+# Log crash JVM / Gradle
+*.log
+hs_err_pid*.log
+replay_pid*.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
