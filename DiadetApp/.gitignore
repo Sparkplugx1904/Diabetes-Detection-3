@@ -17,3 +17,5 @@ local.properties
 
 # Model besar — jangan push ke git (terlalu besar untuk GitHub)
 app/src/main/assets/best.pt
+
+*.log
