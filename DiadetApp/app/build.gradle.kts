@@ -26,6 +26,13 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            // HP dev arm64: APK debug hanya bawa native lib arm64 (~70MB vs ~210MB).
+            // Release tetap semua ABI (tidak difilter).
+            ndk {
+                abiFilters += "arm64-v8a"
+            }
+        }
     }
 
     compileOptions {
