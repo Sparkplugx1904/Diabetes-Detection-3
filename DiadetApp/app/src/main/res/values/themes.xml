@@ -1,0 +1,15 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Diadet" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color (blue for diabetes awareness) -->
+        <item name="colorPrimary">#1565C0</item>
+        <item name="colorPrimaryVariant">#0D47A1</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">#03DAC6</item>
+        <item name="colorSecondaryVariant">#018786</item>
+        <item name="colorOnSecondary">#000000</item>
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    </style>
+</resources>
