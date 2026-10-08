@@ -5,6 +5,8 @@
 # PyTorch Mobile
 -keep class org.pytorch.** { *; }
 -keep class com.facebook.jni.** { *; }
+-dontwarn javax.annotation.**
+-dontwarn com.facebook.jni.**
 
 # Keep model classes
 -keep class com.diadet.madyapadma.model.** { *; }

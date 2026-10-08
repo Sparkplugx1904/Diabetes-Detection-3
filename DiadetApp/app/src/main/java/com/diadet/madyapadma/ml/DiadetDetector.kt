@@ -143,10 +143,9 @@ class DiadetDetector(private val context: Context) {
             }
         }
 
-        return filterTongueDetections(
-            parseDetections(predTensor, scale, padLeft, padTop, bitmap.width, bitmap.height),
-            bitmap
-        )
+        val detections = parseDetections(predTensor, scale, padLeft, padTop, bitmap.width, bitmap.height)
+        Log.d(TAG, "YOLO detections found: ${detections.size}")
+        return detections
     }
 
     /**

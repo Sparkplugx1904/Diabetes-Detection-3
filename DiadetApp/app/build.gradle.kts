@@ -1,18 +1,19 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.diadet.madyapadma"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.diadet.madyapadma"
-        minSdk = 31
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        minSdk = 24
+        targetSdk = 35
+        versionCode = 2
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -21,14 +22,13 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
         debug {
-            // HP dev arm64: APK debug hanya bawa native lib arm64 (~70MB vs ~210MB).
-            // Release tetap semua ABI (tidak difilter).
             ndk {
                 abiFilters += "arm64-v8a"
             }
@@ -48,7 +48,6 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-        // PyTorch Mobile uses JNI libs — keep them
         jniLibs {
             useLegacyPackaging = true
         }
@@ -60,9 +59,7 @@ android {
 }
 
 kotlin {
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-    }
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -95,7 +92,7 @@ dependencies {
     implementation(libs.camerax.view)
     implementation(libs.camerax.compose)
 
-    // PyTorch Mobile (inference engine — .pt model)
+    // PyTorch Mobile
     implementation(libs.pytorch.android)
     implementation(libs.pytorch.android.torchvision)
 

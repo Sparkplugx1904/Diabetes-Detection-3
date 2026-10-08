@@ -1,5 +1,8 @@
 # Folder riset & web app (tidak di-push: besar, berisi model biner)
 Andidet.AI/
+Testing
+evaluation_results/
+Chat WhatsApp*.txt
 
 # Model ML (biner besar / hasil generate — dibuat ulang via export_torchscript.py)
 *.pt
