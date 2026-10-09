@@ -1,0 +1,39 @@
+{
+    "dataset_path": "Testing/preprocessedcropped/test",
+    "total_images": 50,
+    "total_diabetes": 25,
+    "total_nondiabetes": 25,
+    "correct_predictions": 46,
+    "accuracy": 0.92,
+    "confusion_matrix": {
+        "TP": 21,
+        "FN": 4,
+        "FP": 0,
+        "TN": 25
+    },
+    "diabetes_metrics": {
+        "precision": 1.0,
+        "recall_sensitivity": 0.84,
+        "f1_score": 0.9130434782608695,
+        "support": 25
+    },
+    "nondiabetes_metrics": {
+        "precision": 0.8620689655172413,
+        "recall_specificity": 1.0,
+        "f1_score": 0.9259259259259259,
+        "support": 25
+    },
+    "macro_avg": {
+        "f1_score": 0.9194847020933977
+    },
+    "weighted_avg": {
+        "f1_score": 0.9194847020933977
+    },
+    "roc_auc": 0.9823999999999999,
+    "latency_ms": {
+        "mean": 331.640779999434,
+        "std": 62.8566148813276,
+        "min": 229.35290000168607,
+        "max": 577.7511000051163
+    }
+}
