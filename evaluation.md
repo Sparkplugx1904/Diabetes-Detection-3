@@ -1,7 +1,7 @@
 # Laporan Evaluasi Model YOLO Deteksi Diabetes
 
 Dokumen ini memuat hasil evaluasi performa model **YOLO Diabetes Detection** terhadap dataset pengujian (**test set**):
-`Testing/preprocessedcropped/test`
+`Testing/preprocessedcropped/test` yang bersumber dari [Mendeley Data: Type 2 Diabetes Mellitus Tongue Dataset](https://data.mendeley.com/datasets/hyb44jf936/2).
 
 ---
 
@@ -11,6 +11,7 @@ Dokumen ini memuat hasil evaluasi performa model **YOLO Diabetes Detection** ter
 | :--- | :--- | :--- |
 | **Model yang Diuji** | `Andidet.AI/Diadet AI/best.pt` | Ultralytics YOLO Object Detection |
 | **Dataset Uji** | `Testing/preprocessedcropped/test` | 50 citra lidah hasil pemotongan (crop) |
+| **Sumber Data Uji** | [Mendeley Data](https://data.mendeley.com/datasets/hyb44jf936/2) | *Type 2 Diabetes Mellitus Tongue Dataset (v2)* |
 | **Total Sampel** | 50 citra | 25 Diabetes, 25 Nondiabetes (Balanced) |
 | **Akurasi Keseluruhan** | **92.00%** | 46 dari 50 citra berhasil diprediksi dengan benar |
 | **ROC-AUC Score** | **0.9824** | Kemampuan pemisahan kelas (*discriminative power*) sangat tinggi |
